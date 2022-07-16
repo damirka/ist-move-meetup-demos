@@ -12,12 +12,24 @@ module hero::coin {
         )
     }
 
-    entry fun mint(
+    public fun mint(
         treasury: &mut TreasuryCap<GOLD>,
         amount: u64,
         ctx: &mut TxContext
     ): Coin<GOLD> {
         coin::mint(treasury, amount, ctx)
+    }
+
+    entry fun mint_and_send(
+        treasury: &mut TreasuryCap<GOLD>,
+        amount: u64,
+        receiver: address,
+        ctx: &mut TxContext
+    ) {
+        transfer::transfer(
+            mint(treasury, amount, ctx),
+            receiver
+        )
     }
 }
 
@@ -91,7 +103,7 @@ module 0x0::sword_shop {
         transfer::share_object(shop);
     }
 
-    public entry fun buy_sword<T: key>(
+    public entry fun buy_sword<T: key + store>(
         character: &mut T,
         shop: &mut SwordShop,
         listing: Listing,
