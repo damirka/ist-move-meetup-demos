@@ -35,18 +35,18 @@ module hero::coin {
 
 module hero::hero {
     use sui::transfer;
-    use sui::id::VersionedID;
+    use sui::object::{Self, Info};
     use sui::tx_context::{Self, TxContext};
 
     /// Our hero to use in different games.
     struct Hero has key {
-        id: VersionedID,
+        info: Info,
         name: vector<u8>
     }
 
     entry fun create(name: vector<u8>, ctx: &mut TxContext) {
         let hero = Hero {
-            id: tx_context::new_id(ctx),
+            info: object::new(ctx),
             name
         };
 
@@ -57,9 +57,9 @@ module hero::hero {
 module 0x0::sword_shop {
     use sui::transfer::{Self, transfer_to_object as tr_obj};
     use sui::coin::{Self, Coin};
-    use sui::id::{Self, VersionedID};
+    use sui::object::{Self, Info};
     use sui::balance::{Self, Balance};
-    use sui::tx_context::{Self, TxContext};
+    use sui::tx_context::{TxContext};
 
     // our Gold coin
     use hero::coin::GOLD;
@@ -69,25 +69,25 @@ module 0x0::sword_shop {
     const CLASS_EPIC: u8 = 100;
 
     struct Listing has key {
-        id: VersionedID,
+        info: Info,
         sword: Sword,
         price: u64
     }
 
     struct Sword has key, store {
-        id: VersionedID,
+        info: Info,
         power: u64,
         item_class: u8,
     }
 
     struct SwordShop has key {
-        id: VersionedID,
+        info: Info,
         balance: Balance<GOLD>
     }
 
     fun init(ctx: &mut TxContext) {
         let shop = SwordShop {
-            id: tx_context::new_id(ctx),
+            info: object::new(ctx),
             balance: balance::zero()
         };
 
@@ -115,9 +115,9 @@ module 0x0::sword_shop {
         let balance = coin::into_balance(coin);
         balance::join(&mut shop.balance, balance);
 
-        let Listing { id, sword, price: _ } = listing;
+        let Listing { info, sword, price: _ } = listing;
 
-        id::delete(id);
+        object::delete(info);
 
         tr_obj(sword, character)
     }
@@ -129,9 +129,9 @@ module 0x0::sword_shop {
         ctx: &mut TxContext
     ): Listing {
         Listing {
-            id: tx_context::new_id(ctx),
+            info: object::new(ctx),
             sword: Sword {
-                id: tx_context::new_id(ctx),
+                info: object::new(ctx),
                 power,
                 item_class
             },
